@@ -1,5 +1,5 @@
 
-## This is a library of helpful classes and functions for the ME416 Lab.
+"""This is a library of helpful classes and functions for the ME416 Lab."""
 
 import RPi.GPIO as GPIO
 import atexit

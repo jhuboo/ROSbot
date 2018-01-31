@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 
-## Simple talker demo that published std_msgs/Strings messages
-## to the 'chatter' topic
-## Wraps the "talker" into an object, and show how to use an "internal state"
+"""Simple talker demo that published std_msgs/Strings messages to the 'chatter' topic
+Wraps the "talker" into an object, and show how to use an "internal state"
+"""
 
 import rospy
 from std_msgs.msg import String
 
 class Talker():
+    """Class that repeatedly counts from 0 to 9 and publishes to the topic chatter"""
     def __init__(self):
         #Init publisher on the 'chatter' topic
         self.pub=rospy.Publisher('chatter', String, queue_size=10)
         self.count=0
 
     def updateCount(self):
+        """Update internal counter modulo 10"""
         #Count from 0 to 9 and then repeat
         self.count+=1
         if self.count>9:
@@ -22,6 +24,7 @@ class Talker():
         #self.count=(self.count+1)%10
 
     def talk(self):
+        """Update the count, write the message on console an on the topic"""
         self.updateCount()
         #Prepare string. Note that this is one of the fundamental types.
         #Usually we would need to initialize the structure of the message
@@ -32,6 +35,7 @@ class Talker():
         self.pub.publish(hello_str)
         
 def talker():
+    """Setup node and talker object. Main ROS loop."""
     #Init node. anonymous=True allows multiple launch with automatically assigned names
     rospy.init_node('talker',anonymous='True')
     #Set rate to use (in Hz)

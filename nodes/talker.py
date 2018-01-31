@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-## Simple talker demo that published std_msgs/Strings messages
-## to the 'chatter' topic
+"""Simple talker demo that published std_msgs/Strings messages to the 'chatter' topic"""
 
 import rospy
 from std_msgs.msg import String
 
 def talker():
+    """Node setup and main ROS loop"""
     #Publish on the 'chatter' topic
     pub = rospy.Publisher('chatter', String, queue_size=10)
     #Init node. anonymous=True allows multiple launch with automatically assigned names
@@ -25,7 +25,4 @@ def talker():
         rate.sleep()
 
 if __name__ == '__main__':
-    try:
-        talker()
-    except rospy.ROSInterruptException:
-        pass
+    talker()
