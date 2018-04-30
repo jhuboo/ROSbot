@@ -14,7 +14,7 @@ class ImageRepeater():
         self.pub = rospy.Publisher('image_repeated', Image, queue_size=1)
         self.bridge = CvBridge()
         
-    def callback(msg):
+    def callback(self,msg):
         # Convert ros image into a cv2 image (we cannot use bridge because topic is compressed)
         np_arr = np.fromstring(msg.data, np.uint8)
         img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -25,5 +25,6 @@ class ImageRepeater():
         self.pub.publish(self.bridge.cv2_to_imgmsg(img_processed, "bgr8"))
 
 if __name__ == '__main__':
+    rospy.init_node('image_repeater')
     ir=ImageRepeater()
     rospy.spin()
