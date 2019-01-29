@@ -22,12 +22,10 @@ def key_op():
         if key == 'q':
             print("")
             rospy.loginfo("Shutdown initiated")
-            rospy.signal_shutdown("Shutting down initiated by key_emergency_switch")
+            rospy.signal_shutdown(
+                'Shutting down initiated by %s' % rospy.get_name())
         rate.sleep()
 
-        
+
 if __name__ == '__main__':
-    try:
-        key_op()
-    finally:
-        pass
+    key_op()
