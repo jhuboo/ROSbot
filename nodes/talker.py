@@ -20,9 +20,8 @@ def main():
     rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
-        msg.data = 'I am %s. The time is %.2f.' % [
-            rospy.get_name(), rospy.get_time()
-        ]
+        msg.data = 'I am %s. The time is %.2f.' % (rospy.get_name(),
+                                                   rospy.get_time())
         #Write to console
         rospy.loginfo(msg.data)
         #Publish
