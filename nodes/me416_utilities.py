@@ -37,6 +37,7 @@ class MotorSpeed:
         #Save parameter privately
         self.speed_factor = speed_factor
         self.max_duty_cycle = 90
+        self.motor_name = motor_name
 
         #Init pins and PWM objects
         if IS_RPI:
@@ -46,10 +47,14 @@ class MotorSpeed:
             self.bw_pwm = GPIO.PWM(bw_pin, 100)
             self.fw_pwm.start(0)
             self.bw_pwm.start(0)
+        else:
+            print 'Motor "%s" initialized' % motor_name
 
     def set_speed(self, speed):
         """ Set speed. speed=-1 is max_duty_cycle backward, speed=1 is max_duty_cycle foward, speed=0 is stop """
-        duty_cycle = int(abs(speed) * self.speed_factor * self.max_duty_cycle)
+        duty_cycle = min(
+            int(abs(speed) * self.speed_factor * self.max_duty_cycle),
+            self.max_duty_cycle)
         if speed < 0:
             duty_cycle_bw = duty_cycle
             duty_cycle_fw = 0
@@ -65,7 +70,7 @@ class MotorSpeed:
             self.fw_pwm.ChangeDutyCycle(duty_cycle_fw)
         else:
             print '%s duty cycles: Forward = %d, Backward = %d.' % (
-                motor_name, duty_cycle_fw, duty_cycle_bw)
+                self.motor_name, duty_cycle_fw, duty_cycle_bw)
 
 
 #Specialized motor classes

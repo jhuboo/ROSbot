@@ -7,11 +7,11 @@ from std_msgs.msg import String
 
 def main():
     """Node setup and main ROS loop"""
-    #Publish on the 'chatter' topic
-
-    pub = rospy.Publisher('chatter', String, queue_size=10)
     #Init node. anonymous=True allows multiple launch with automatically assigned names
     rospy.init_node('talker', anonymous='True')
+
+    #Prepare publisher on the 'chatter' topic
+    pub = rospy.Publisher('chatter', String, queue_size=10)
 
     #Prepare message object
     msg = String()
@@ -22,10 +22,13 @@ def main():
     while not rospy.is_shutdown():
         msg.data = 'I am %s. The time is %.2f.' % (rospy.get_name(),
                                                    rospy.get_time())
+
         #Write to console
         rospy.loginfo(msg.data)
+
         #Publish
-        pub.publish(msg.data)
+        pub.publish(msg)
+
         #Wait until it is done
         rate.sleep()
 
