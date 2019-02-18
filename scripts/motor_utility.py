@@ -9,7 +9,8 @@ import time
 SPEED_FACTOR = 0.95
 
 
-def apply_action(L_motor, R_motor, direction, side, is_recursive=True):
+def apply_action(L_motor, R_motor, direction, side, seconds,
+                 is_recursive=True):
     """Apply the specified action to the specified side"""
     if direction == 'forward':
         speed = 1
@@ -25,8 +26,9 @@ def apply_action(L_motor, R_motor, direction, side, is_recursive=True):
         R_motor.set_speed(speed)
 
     if is_recursive:
-        time.sleep(2)
-        apply_action(L_motor, R_motor, 'stop', 'both', is_recursive=False)
+        time.sleep(float(seconds))
+        apply_action(
+            L_motor, R_motor, 'stop', 'both', seconds, is_recursive=False)
 
 
 def main(args):
@@ -35,7 +37,7 @@ def main(args):
     L_motor = mu.MotorSpeedLeft(SPEED_FACTOR)
     R_motor = mu.MotorSpeedRight()
 
-    apply_action(L_motor, R_motor, args.direction, args.side)
+    apply_action(L_motor, R_motor, args.direction, args.side, args.seconds)
 
 
 if __name__ == "__main__":
@@ -43,5 +45,6 @@ if __name__ == "__main__":
         description='Utility to test ROSBot motors.')
     parser.add_argument('direction')
     parser.add_argument('side', nargs='?', default='both')
+    parser.add_argument('seconds', nargs='?', default=2)
     args = parser.parse_args()
     main(args)
