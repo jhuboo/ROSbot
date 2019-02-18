@@ -1,17 +1,16 @@
 #!/usr/bin/env python
-#
 """Simple script that waits for the key 'q' and then terminates"""
 
 import rospy
 import me416_utilities as mu
 
 
-def key_op():
+def main():
     """Function to setup node and loop"""
     #Setup node and object for rate throttling
     rospy.init_node('key_emergency_switch')
     rate = rospy.Rate(50)
-    print("     Press 'q' to quit.\n")
+    print '     Press "q" to quit.\n'
 
     #Boilerplate to get function to read keyboard
     getch = mu._Getch()
@@ -20,7 +19,6 @@ def key_op():
     while not rospy.is_shutdown():
         key = getch()
         if key == 'q':
-            print("")
             rospy.loginfo("Shutdown initiated")
             rospy.signal_shutdown(
                 'Shutting down initiated by %s' % rospy.get_name())
@@ -28,4 +26,4 @@ def key_op():
 
 
 if __name__ == '__main__':
-    key_op()
+    main()
