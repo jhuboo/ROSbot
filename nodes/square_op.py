@@ -5,7 +5,7 @@ import rospy
 from geometry_msgs.msg import Twist
 
 
-class ZigZagCommander(object):
+class SquareCommander(object):
     """
     Publishes Twist commands on robot_twist topic corresponding to a
     sequence of forward-moving arches
@@ -14,7 +14,7 @@ class ZigZagCommander(object):
     def __init__(self):
         self.pub = rospy.Publisher('robot_twist', Twist, queue_size=10)
         self.count = 0
-        self.nb_actions = 2
+        self.nb_actions = 4
 
     def send(self):
         """ Publishes a new Twist command """
@@ -22,11 +22,15 @@ class ZigZagCommander(object):
         msg = Twist()
 
         #Fill in linear (x-axis) and angular (z-axis) velocities
-        msg.linear.x = 0.5
         if self.count == 0:
-            msg.angular.z = -0.5
+            msg.linear.x = 1
+            msg.angular.z = 0
+        elif self.count == 2:
+            msg.linear.x = 0
+            msg.angular.z = 1
         else:
-            msg.angular.z = 0.5
+            msg.linear.x = 0
+            msg.angular.z = 0
 
         #Update count
         self.count = (self.count + 1) % self.nb_actions
@@ -37,10 +41,11 @@ class ZigZagCommander(object):
 
 def main():
     """ Main ROS loop """
-    rospy.init_node('zigzag_op')
+    rospy.init_node('square_op')
     #Set rate to use (in Hz)
-    rate = rospy.Rate(1)
-    zzc = ZigZagCommander()
+    delay = 2  #seconds
+    rate = rospy.Rate(1.0 / delay)
+    zzc = SquareCommander()
     while not rospy.is_shutdown():
         #Talk
         zzc.send()
