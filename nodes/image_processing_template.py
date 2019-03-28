@@ -29,10 +29,7 @@ def img_patch_show(img, box, window_name):
 def pixel_classify(p):
     """ Classify a pixel as background or foreground accoriding to a set of predefined rules """
     #This implementation is a stub. You should implement your own rules here.
-    if sum(p) < 20:
-        return -1.0
-    else:
-        return 1.0
+    return 1.0
 
 
 def img_classify(img):
