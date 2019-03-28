@@ -32,7 +32,7 @@ def pixel_classify(p):
     return 1.0
 
 
-def img_classify(img):
+def image_classify(img):
     """ Classify each pixel in an image, and create a black-and-white mask """
     img_segmented = img.copy()
     for r in xrange(0, img.shape[0]):
