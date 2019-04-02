@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+  <include file="$(find raspicam_node)/launch/tracking.launch"/>
+  <param name="/raspicam_node/saturation" value="100"/>
+  <param name="/raspicam_node/ISO" value="800"/>
+</launch>

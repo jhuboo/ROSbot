@@ -5,9 +5,10 @@ import numpy as np
 import cv2
 
 
-def img_patch(img, box):
+def image_patch(img, x, y, w, h):
     """ Returns a region of interest of img specified by box """
     #check box against the boundaries of the image
+    box = [x, y, x + w, y + h]
     if box[0] < 0:
         box[0] = 0
     if box[1] < 0:
@@ -17,13 +18,7 @@ def img_patch(img, box):
     if box[3] > img.shape[1]:
         box[3] = img.shape[1]
 
-    return img[box[0]:box[2], box[1]:box[3], :]
-
-
-def img_patch_show(img, box, window_name):
-    """ Show a region of interest of img specified by box """
-    region = img_patch(img, box)
-    cv2.imshow(window_name, region)
+    return img[box[1]:box[3], box[0]:box[2], :]
 
 
 def pixel_classify(p):
@@ -45,23 +40,34 @@ def image_classify(img):
     return img_segmented
 
 
-def img_line_vertical(img, x):
+def image_line_vertical(img, x):
     """ Adds a green 3px vertical line to the image """
-    img_line = img.copy()
-    cv2.line(img_line, (x, 0), (x, img.shape[1]), (0, 255, 0), 3)
-    return img_line
+    cv2.line(img, (x, 0), (x, img.shape[1]), (0, 255, 0), 3)
+    return img
 
 
-if __name__ == '__main__':
+def image_rectangle(img, x, y, w, h):
+    """ Adds a green rectangle to the image """
+    #This implementation is a stub. You should implement your own code here.
+
+    return img
+
+
+def test():
     #load sample image
     img = cv2.imread('../data/BU_logo.png', cv2.IMREAD_COLOR)
     #show sample region
-    img_patch_show(img, [50, 20, 70, 40], 'region')
+    img_patch = image_patch(img, 50, 20, 20, 20)
     #run classifier to segment image
-    img_segmented = img_classify(img)
+    img_segmented = image_classify(img)
     #add a line at 10px from the left edge
-    img_segmented_line = img_line_vertical(img, 10)
+    img_segmented_line = image_line_vertical(img, 10)
     #show results
+    cv2.imshow('patch', img_patch)
     cv2.imshow('segmented', img_segmented_line)
     cv2.waitKey(5000)
     cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    test()
