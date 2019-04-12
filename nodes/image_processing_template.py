@@ -53,6 +53,13 @@ def image_rectangle(img, x, y, w, h):
     return img
 
 
+def image_one_to_three_channels(img):
+    """ Transforms an image from two channels to three channels """
+    #First promote array to three dimensions, then repeat along third dimension
+    img_three = np.tile(img.reshape(img.shape[0], img.shape[1], 3), (1, 1, 3))
+    return img_three
+
+
 def test():
     #load sample image
     img = cv2.imread('../data/BU_logo.png', cv2.IMREAD_COLOR)
