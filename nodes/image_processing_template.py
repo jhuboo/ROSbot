@@ -9,7 +9,6 @@ def image_patch(img, x, y, w, h):
     """ Returns a region of interest of img specified by box """
     #check box against the boundaries of the image
     box = [y, x, y + h, x + w]
-    print box
     if box[0] < 0:
         box[0] = 0
     if box[1] < 0:
@@ -18,7 +17,6 @@ def image_patch(img, x, y, w, h):
         box[2] = img.shape[0]
     if box[3] > img.shape[1]:
         box[3] = img.shape[1]
-    print 'corrected: ', box
 
     return img[box[0]:box[2], box[1]:box[3], :]
 
