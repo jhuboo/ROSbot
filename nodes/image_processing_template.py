@@ -56,7 +56,7 @@ def image_rectangle(img, x, y, w, h):
 def image_one_to_three_channels(img):
     """ Transforms an image from two channels to three channels """
     #First promote array to three dimensions, then repeat along third dimension
-    img_three = np.tile(img.reshape(img.shape[0], img.shape[1], 3), (1, 1, 3))
+    img_three = np.tile(img.reshape(img.shape[0], img.shape[1], 1), (1, 1, 3))
     return img_three
 
 
