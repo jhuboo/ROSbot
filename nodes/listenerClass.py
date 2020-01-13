@@ -14,9 +14,9 @@ class Listener:
         #Use the 'chatter' topic
         rospy.Subscriber('chatter', String, self.callback)
 
-    def callback(self, data):
+    def callback(self, msg):
         """Callback for the subscriber"""
-        rospy.loginfo(' I heard %s', data.data)
+        rospy.loginfo(' I heard %s', msg.data)
 
 
 def listener():

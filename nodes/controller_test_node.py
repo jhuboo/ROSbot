@@ -14,12 +14,9 @@ class ControllerTest(object):
         # Use the 'chatter' topic
         rospy.Subscriber('/error_signal_stamped', PointStamped, self.callback)
         self.pub = {}
-        self.pub['proportional'] = rospy.Publisher(
-            '/control_proportional', Float64, queue_size=2)
-        self.pub['derivative'] = rospy.Publisher(
-            '/control_derivative', Float64, queue_size=2)
-        self.pub['integral'] = rospy.Publisher(
-            '/control_integral', Float64, queue_size=2)
+        for pub_name in ['proportional', 'derivative', 'integral']:
+            self.pub[pub_name] = rospy.Publisher(
+                '/control_' + pub_name, Float64, queue_size=2)
         self.stamp_previous = None
         self.pid = controller.PIDController()
 
