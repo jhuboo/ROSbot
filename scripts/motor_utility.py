@@ -10,7 +10,7 @@ import time
 SPEED_FACTOR = 0.95
 
 
-def apply_action(L_motor, R_motor, direction, side, is_recursive=True,duration=2):
+def apply_action(L_motor, R_motor, direction, side, is_recursive=True, duration=2):
     """Apply the specified action to the specified side"""
     if direction == 'forward':
         speed = 1
@@ -40,8 +40,10 @@ def main(args):
 
 
 if __name__ == "__main__":
+    example_text="""example usage: ./motor_utility.py forward --side left --duration 5"""
     parser = argparse.ArgumentParser(
         description='Utility to test ROSBot motors.',
+        epilog=example_text,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('direction')
     parser.add_argument('--side', type=str, default='both', help='Side to run, can be "left", "right", or "both"')
