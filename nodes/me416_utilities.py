@@ -1,4 +1,4 @@
-"""This is a library of helpful classes and functions for the ME416 Lab. If the module is on non-RasberryPi systems (more 
+"""This is a library of helpful classes and functions for the ME416 Lab. If the module is on non-RasberryPi systems (more
 exactly, where the RPi module is not available), the motor commands are logged to the console"""
 
 from __future__ import print_function
@@ -146,12 +146,9 @@ class _GetchWindows(object):
 #Class to read quadrature encoders
 class QuadEncoder(Thread):
     """A class to read the two output of a quadrature encoder and estimate its speed through GPIO.
-    NOTE: We can make the callback functions more compact, but it will require more logic to determine if
-    the transition pin was rising or falling. Instead, we split the callbacks into four functions that
-    practically run the same logic.
     ENCODER LOGIC: We assume that positive direction is when A is the leading edge. Thus, whenever we see
     a edge transition we check if the triggering pin has the same state as the non-triggering pin (trigger pin is following)
-    or opposite (trigger pin is leading). For our 150RPM motor @4.5V with 120:1 gear ratio, we expect a max CPR of 150/60*120*12=3600
+    or opposite (trigger pin is leading). For our 150RPM motor @4.5V with 120:1 gear ratio and encoder with 12CPR, we expect a max CPR of 150/60*120*12=3600.
     """
     def __init__(self,
                  A_pin,
@@ -201,11 +198,15 @@ class QuadEncoder(Thread):
         else:
             self.count -= 1  # B leads A
 
-    # Override the default Thread.run() function to compute the encoder speed
+    # Override the default Thread.run() function to compute the encoder speed as counts/second
     def run(self):
+        lastUpdateTime = time.time(
+        ) - 1.00  #add an offset so we don't divide by zero
         while not self.bStopFlag:
-            self.velocity = float(self.count) / self.updateInterval
+            currentTime = time.time()
+            self.velocity = float(self.count) / (currentTime - lastUpdateTime)
             self.count = 0  # Note: If there is threading issues we may need a lock for modifying this variable
+            lastUpdateTime = currentTime
             time.sleep(self.updateInterval)
 
     # Return the velocity in counts/seconds
@@ -219,6 +220,21 @@ class QuadEncoder(Thread):
     # Function to stop thread
     def stop(self):
         self.bStopFlag = True
+
+
+# Specialized class for left and right encoders
+class QuadEncoderRight(QuadEncoder):
+    """Specialized class to create a right encoder"""
+    def __init__(self, updateInterval=0.01):
+        QuadEncoder.__init__(self, R_encoder_A, R_encoder_B, updateInterval,
+                             "Right Encoder")
+
+
+class QuadEncoderLeft(QuadEncoder):
+    """Specialized class to create a left encoder"""
+    def __init__(self, updateInterval=0.01):
+        QuadEncoder.__init__(self, L_encoder_A, L_encoder_B, updateInterval,
+                             "Left Encoder")
 
 
 # CSV reading
