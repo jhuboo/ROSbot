@@ -27,10 +27,10 @@ R_backward_pin = 29
 L_forward_pin = 16
 L_backward_pin = 18
 # Define the GPIO pins for reading quadrature encoder
-R_encoder_A = 3
-R_encoder_B = 5
-L_encoder_A = 19
-L_encoder_B = 21
+R_encoder_A = 19
+R_encoder_B = 21
+L_encoder_A = 3
+L_encoder_B = 5
 
 
 # Motor control class
@@ -173,9 +173,11 @@ class QuadEncoder(Thread):
             self.A_state = GPIO.input(self.A_pin)
             self.B_state = GPIO.input(self.B_pin)
             # Add interrupts for the encoder reading
+            time.sleep(0.01)
             GPIO.add_event_detect(self.A_pin,
                                   GPIO.BOTH,
                                   callback=self.A_callback)
+            time.sleep(0.01)
             GPIO.add_event_detect(self.B_pin,
                                   GPIO.BOTH,
                                   callback=self.B_callback)
