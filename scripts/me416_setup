@@ -40,7 +40,7 @@ if [ "$1" = "name" ] || [ "$1" = "all" ]; then
 	me416_setup_hostname
 fi
 
-if [ "$1" = "wifi" ] || [ "$1" = "all" ]; then
+if [ "$1" = "wifi" ]; then
 	#Change BUWIFI
 	me416_setup_BUWIFI
 fi
