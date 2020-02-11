@@ -2,14 +2,11 @@
 If the module is on non-RasberryPi systems (more exactly, where the
 RPi module is not available), the motor commands are logged to the console"""
 
-from __future__ import print_function
-
-# This module might be used not on a RPi
+# This module might be used not on a
 try:
     import RPi.GPIO as GPIO
 except ImportError:
     IS_RPI = False
-    print('GPIO library not available. Starting in demo mode.')
 else:
     IS_RPI = True
 
@@ -51,7 +48,7 @@ class MotorSpeed:
             self.fw_pwm.start(0)
             self.bw_pwm.start(0)
         else:
-            print ('Motor "%s" initialized' % motor_name)
+            print 'Motor "%s" initialized' % motor_name
 
     def set_speed(self, speed):
         """ Set speed. speed=-1 is max_duty_cycle backward, speed=1 is max_duty_cycle foward, speed=0 is stop """
@@ -72,8 +69,8 @@ class MotorSpeed:
             self.bw_pwm.ChangeDutyCycle(duty_cycle_bw)
             self.fw_pwm.ChangeDutyCycle(duty_cycle_fw)
         else:
-            print ('%s duty cycles: Forward = %d, Backward = %d.' % (
-                self.motor_name, duty_cycle_fw, duty_cycle_bw))
+            print '%s duty cycles: Forward = %d, Backward = %d.' % (
+                self.motor_name, duty_cycle_fw, duty_cycle_bw)
 
 
 #Specialized motor classes

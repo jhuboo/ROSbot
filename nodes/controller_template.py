@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+""" A first template for a PID controller """
 
-
-class PIDController(object):
+class PID(object):
     """ Computes proportional, derivative, and integral terms for a PID controller """
 
-    def __init__(self, kp=1, kd=1, ki=1):
+    def __init__(self, kp=1.0, kd=1.0, ki=1.0):
         """Initializes gains and internal state (previous error and integral error)"""
         self.kp = kp
         self.kd = kd
@@ -16,14 +16,15 @@ class PIDController(object):
     def proportional(self, error_signal):
         """ Compute proportional term (with gain) """
         #TODO: This is a stub. Write your code here.
-        return 0
-
-    def derivative(self, error_signal, time_delay):
-        """ Compute derivative term (with gain) """
-        #TODO: This is a stub. Write your code here.
-        return 0
+        return f_b
 
     def integral(self, error_signal, time_delay):
         """ Compute integral term (with gain) """
         #TODO: This is a stub. Write your code here.
-        return 0
+        return f_i
+
+    def derivative(self, error_signal, time_delay):
+        """ Compute derivative term (with gain) """
+        #TODO: This is a stub. Write your code here.
+        return f_d
+
