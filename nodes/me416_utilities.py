@@ -3,9 +3,11 @@ exactly, where the RPi module is not available), the motor commands are logged t
 
 from __future__ import print_function
 from threading import Thread
+import atexit
 import time
 
-# This module might be used not on a RPi
+# This module might be used not on a RPi (i.e., without GPIO)
+# The global constant will allow to know if we can use the GPIO or not
 try:
     import RPi.GPIO as GPIO
 except ImportError:
@@ -13,12 +15,29 @@ except ImportError:
 else:
     IS_RPI = True
 
-import atexit
-
 # Set the pin numbering scheme to board numbers (as opposed to Broadcom number, see the pinout)
 if IS_RPI:
     GPIO.setmode(GPIO.BOARD)
-    atexit.register(GPIO.cleanup)
+
+# Wrappers for setting pins and cleanup. These are used so that we can cleanup only when we actually set some pins (avoid warning messages)
+IS_SETUP = False
+
+
+def setup(pin, mode):
+    global IS_SETUP
+    if IS_RPI:
+        GPIO.setup(pin, mode)
+        IS_SETUP = True
+
+
+def cleanup():
+    if IS_SETUP and IS_RPI:
+        GPIO.cleanup()
+
+
+# Register the cleanup function to run at exit
+if IS_RPI:
+    atexit.register(cleanup)
 
 # Assign variable names to the pins so you don't have to control them by number
 R_forward_pin = 31
@@ -48,8 +67,8 @@ class MotorSpeed:
 
         #Init pins and PWM objects
         if IS_RPI:
-            GPIO.setup(fw_pin, GPIO.OUT)
-            GPIO.setup(bw_pin, GPIO.OUT)
+            setup(fw_pin, GPIO.OUT)
+            setup(bw_pin, GPIO.OUT)
             self.fw_pwm = GPIO.PWM(fw_pin, 100)
             self.bw_pwm = GPIO.PWM(bw_pin, 100)
             self.fw_pwm.start(0)
@@ -78,6 +97,7 @@ class MotorSpeed:
         else:
             print('%s duty cycles: Forward = %d, Backward = %d.' %
                   (self.motor_name, duty_cycle_fw, duty_cycle_bw))
+
 
 #Specialized motor classes
 class MotorSpeedLeft(MotorSpeed):
@@ -165,8 +185,8 @@ class QuadEncoder(Thread):
         self.bStopFlag = False
         # Set pins as input
         if IS_RPI:
-            GPIO.setup(self.A_pin, GPIO.IN)
-            GPIO.setup(self.B_pin, GPIO.IN)
+            setup(self.A_pin, GPIO.IN)
+            setup(self.B_pin, GPIO.IN)
             # Get the initial pin states
             self.A_state = GPIO.input(self.A_pin)
             self.B_state = GPIO.input(self.B_pin)
