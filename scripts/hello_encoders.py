@@ -18,23 +18,19 @@ class ServiceExit(Exception):
 def exit_gracefully(signum, frame):
     raise ServiceExit
 
-
-if __name__ == "__main__":
+def main():
     signal.signal(signal.SIGINT, exit_gracefully)
     signal.signal(signal.SIGTERM, exit_gracefully)
     encoderRight = mu.QuadEncoderRight()
     encoderLeft = mu.QuadEncoderLeft()
     try:
-        encoderRight.start()
-        encoderLeft.start()
         for i in range(1000):
-            print('Right Velocity: ' + str(encoderRight.getVelocity()) +
-                  ' Left Velocity: ' + str(encoderLeft.getVelocity()))
+            print('Right Velocity: ' + str(encoderRight.get_velocity()) +
+                  ' Left Velocity: ' + str(encoderLeft.get_velocity()))
             time.sleep(0.1)
     except ServiceExit:
         # Shut down signal received
         print('Stopping')
-    encoderRight.stop()
-    encoderLeft.stop()
-    encoderRight.join()
-    encoderLeft.join()
+
+if __name__ == "__main__":
+    main()

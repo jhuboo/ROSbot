@@ -1,8 +1,10 @@
-"""This is a library of helpful classes and functions for the ME416 Lab. If the module is on non-RasberryPi systems (more
-exactly, where the RPi module is not available), the motor commands are logged to the console"""
+"""
+This is a library of helpful classes and functions for the ME416 Lab. If the module is on non-RasberryPi systems (more
+exactly, where the RPi module is not available), the motor commands are logged to the console
+"""
 
 from __future__ import print_function
-from threading import Thread
+from threading import Thread, Event
 import atexit
 import time
 
@@ -49,6 +51,114 @@ R_encoder_A = 19
 R_encoder_B = 21
 L_encoder_A = 3
 L_encoder_B = 5
+
+
+#Class to read quadrature encoders
+class QuadEncoder(object):
+    """A class to read the two output of a quadrature encoder and estimate its speed through GPIO.
+    ENCODER LOGIC: We assume that positive direction is when A is the leading edge. Thus, whenever we see
+    a edge transition we check if the triggering pin has the same state as the non-triggering pin (trigger pin is following)
+    or opposite (trigger pin is leading). For our 150RPM motor @4.5V with 120:1 gear ratio and encoder with 12CPR, we expect a max CPR of 150/60*120*12=3600.
+    """
+    def __init__(self,
+                 A_pin,
+                 B_pin,
+                 updateInterval=0.01,
+                 encoder_name="quadrature"):
+        # Init a Thread and an Event to stop it
+        self.thread=Thread(target=self.run)
+        self.event=Event()
+        # Run the thread as daemonic, so that it will terminate when the main thread stops
+        self.thread.daemon=True
+        # Save the pins privately
+        self.A_pin = A_pin
+        self.B_pin = B_pin
+        self.updateInterval = updateInterval  # Update interval in seconds
+        self.encoder_name = encoder_name
+        self.count = 0
+        self.velocity = 0
+        # Set pins as input
+        if IS_RPI:
+            setup(self.A_pin, GPIO.IN)
+            setup(self.B_pin, GPIO.IN)
+            # Get the initial pin states
+            self.A_state = GPIO.input(self.A_pin)
+            self.B_state = GPIO.input(self.B_pin)
+            # Add interrupts for the encoder reading
+            time.sleep(0.01)
+            GPIO.add_event_detect(self.A_pin,
+                                  GPIO.BOTH,
+                                  callback=self.A_callback)
+            time.sleep(0.01)
+            GPIO.add_event_detect(self.B_pin,
+                                  GPIO.BOTH,
+                                  callback=self.B_callback)
+        else:
+            self.A_state = True
+            self.B_state = True
+            print('Encoder "%s" initialized' % encoder_name)
+        # Run thread
+        self.thread.start()
+
+    def A_callback(self, channel):
+        self.A_state = GPIO.input(self.A_pin)
+        if self.A_state == self.B_state:
+            self.count -= 1  # A follows B
+        else:
+            self.count += 1  # A leads B
+
+    def B_callback(self, channel):
+        self.B_state = GPIO.input(self.B_pin)
+        if self.A_state == self.B_state:
+            self.count += 1  # B follows A
+        else:
+            self.count -= 1  # B leads A
+
+    # Thread's run() function to compute the encoder speed as counts/second
+    def run(self):
+        lastUpdateTime = None
+        while not self.event.is_set():
+            currentTime = time.clock()
+            if lastUpdateTime is not None:
+                self.velocity = float(self.count) / (currentTime - lastUpdateTime)
+            else:
+                # Take care of the first iteration in the loop
+                self.velocity = 0.0
+            self.count = 0  # Note: If there is threading issues we may need a lock for modifying this variable
+            lastUpdateTime = currentTime
+            time.sleep(self.updateInterval)
+
+    # Return the velocity in counts/seconds
+    def get_velocity(self):
+        return self.velocity
+
+    # Function to update the interval
+    def set_interval(self, newInterval):
+        self.updateInterval = newInterval
+
+    # Function to stop thread
+    def stop(self):
+        self.event.set()
+
+    # Destructor
+    def __del__(self):
+        """ Destructor: ask thread to stop """
+        self.event.set()
+
+
+# Specialized class for left and right encoders
+class QuadEncoderRight(QuadEncoder):
+    """Specialized class to create a right encoder"""
+    def __init__(self, updateInterval=0.01):
+        QuadEncoder.__init__(self, R_encoder_A, R_encoder_B, updateInterval,
+                             "Right Encoder")
+
+
+class QuadEncoderLeft(QuadEncoder):
+    """Specialized class to create a left encoder"""
+    def __init__(self, updateInterval=0.01):
+        QuadEncoder.__init__(self, L_encoder_A, L_encoder_B, updateInterval,
+                             "Left Encoder")
 
 
 # Motor control class
@@ -159,102 +269,6 @@ class _GetchWindows(object):
     def __call__(self):
         import msvcrt
         return msvcrt.getch()
-
-
-#Class to read quadrature encoders
-class QuadEncoder(Thread):
-    """A class to read the two output of a quadrature encoder and estimate its speed through GPIO.
-    ENCODER LOGIC: We assume that positive direction is when A is the leading edge. Thus, whenever we see
-    a edge transition we check if the triggering pin has the same state as the non-triggering pin (trigger pin is following)
-    or opposite (trigger pin is leading). For our 150RPM motor @4.5V with 120:1 gear ratio and encoder with 12CPR, we expect a max CPR of 150/60*120*12=3600.
-    """
-    def __init__(self,
-                 A_pin,
-                 B_pin,
-                 updateInterval=0.01,
-                 encoder_name="quadrature"):
-        # Init the parent Thread class
-        Thread.__init__(self)
-        # Save the pins privately
-        self.A_pin = A_pin
-        self.B_pin = B_pin
-        self.updateInterval = updateInterval  # Update interval in seconds
-        self.encoder_name = encoder_name
-        self.count = 0
-        self.velocity = 0
-        self.bStopFlag = False
-        # Set pins as input
-        if IS_RPI:
-            setup(self.A_pin, GPIO.IN)
-            setup(self.B_pin, GPIO.IN)
-            # Get the initial pin states
-            self.A_state = GPIO.input(self.A_pin)
-            self.B_state = GPIO.input(self.B_pin)
-            # Add interrupts for the encoder reading
-            time.sleep(0.01)
-            GPIO.add_event_detect(self.A_pin,
-                                  GPIO.BOTH,
-                                  callback=self.A_callback)
-            time.sleep(0.01)
-            GPIO.add_event_detect(self.B_pin,
-                                  GPIO.BOTH,
-                                  callback=self.B_callback)
-        else:
-            self.A_state = True
-            self.B_state = True
-            print('Encoder "%s" initialized' % encoder_name)
-
-    def A_callback(self, channel):
-        self.A_state = GPIO.input(self.A_pin)
-        if self.A_state == self.B_state:
-            self.count -= 1  # A follows B
-        else:
-            self.count += 1  # A leads B
-
-    def B_callback(self, channel):
-        self.B_state = GPIO.input(self.B_pin)
-        if self.A_state == self.B_state:
-            self.count += 1  # B follows A
-        else:
-            self.count -= 1  # B leads A
-
-    # Override the default Thread.run() function to compute the encoder speed as counts/second
-    def run(self):
-        lastUpdateTime = time.time(
-        ) - 1.00  #add an offset so we don't divide by zero
-        while not self.bStopFlag:
-            currentTime = time.time()
-            self.velocity = float(self.count) / (currentTime - lastUpdateTime)
-            self.count = 0  # Note: If there is threading issues we may need a lock for modifying this variable
-            lastUpdateTime = currentTime
-            time.sleep(self.updateInterval)
-
-    # Return the velocity in counts/seconds
-    def getVelocity(self):
-        return self.velocity
-
-    # Function to update the interval
-    def setInterval(self, newInterval):
-        self.updateInterval = newInterval
-
-    # Function to stop thread
-    def stop(self):
-        self.bStopFlag = True
-
-
-# Specialized class for left and right encoders
-class QuadEncoderRight(QuadEncoder):
-    """Specialized class to create a right encoder"""
-    def __init__(self, updateInterval=0.01):
-        QuadEncoder.__init__(self, R_encoder_A, R_encoder_B, updateInterval,
-                             "Right Encoder")
-
-
-class QuadEncoderLeft(QuadEncoder):
-    """Specialized class to create a left encoder"""
-    def __init__(self, updateInterval=0.01):
-        QuadEncoder.__init__(self, L_encoder_A, L_encoder_B, updateInterval,
-                             "Left Encoder")
 
 
 # CSV reading

@@ -1,11 +1,15 @@
 #!/usr/bin/env python
-"""Simple talker demo that published std_msgs/Strings messages to the 'chatter' topic"""
+"""
+Simple repeater demo that receives std_msgs/Strings messages from the 'chatter'
+ topic, modifies them, and then sends them on the 'chatter_repeated' topic
+"""
 
 import rospy
 from std_msgs.msg import String
 
 
 def callback(msg):
+    """ Callback to receive a message and repeat it with some modifications """
     global pub
 
     #Take content from the message
@@ -25,14 +29,13 @@ def callback(msg):
 
 def main():
     """Node setup and main ROS loop"""
-
     global pub
 
     #Init node. anonymous=True allows multiple launch with automatically assigned names
     rospy.init_node('talker', anonymous='True')
 
     #Prepare subscriber on a topic, and publisher on another
-    sub = rospy.Subscriber('chatter', String, callback)
+    rospy.Subscriber('chatter', String, callback)
     pub = rospy.Publisher('chatter_repeated', String, queue_size=10)
 
     rospy.spin()
