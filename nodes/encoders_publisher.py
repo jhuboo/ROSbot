@@ -24,7 +24,7 @@ def main():
     encoder_left = mu.QuadEncoderLeft(updateInterval=None)
 
     #Set rate to use (in Hz)
-    rate = rospy.Rate(2)
+    rate = rospy.Rate(3)
 
     while not rospy.is_shutdown():
         msg.header.stamp = rospy.Time.now()

@@ -17,7 +17,7 @@ class PoseMsgGenerator(object):
         t=rospy.Time.now().to_sec()
         theta=math.fmod(self.omega*t,2*math.pi)
         self.msg.x=self.r*math.sin(theta)
-        self.msg.y=-self.r*math.cos(theta)
+        self.msg.y=-self.r*math.cos(theta)+self.r
         self.msg.theta=theta
 
         return self.msg
