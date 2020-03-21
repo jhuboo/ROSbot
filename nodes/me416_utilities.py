@@ -55,7 +55,9 @@ L_encoder_B = 5
 
 #Class to read quadrature encoders
 class QuadEncoder(object):
-    """A class to read the two output of a quadrature encoder and estimate its speed through GPIO.
+    """
+    A class to read the two output of a quadrature encoder and estimate its speed through GPIO.
+    If the updateInterval is set to None, the velocity is computed by averaging between calls to get_velocity; otherwise, it is updates every updateInterval seconds, using a daemonic thread to update it.
     ENCODER LOGIC: We assume that positive direction is when A is the leading edge. Thus, whenever we see
     a edge transition we check if the triggering pin has the same state as the non-triggering pin (trigger pin is following)
     or opposite (trigger pin is leading). For our 150RPM motor @4.5V with 120:1 gear ratio and encoder with 12CPR, we expect a max CPR of 150/60*120*12=3600.
@@ -63,21 +65,15 @@ class QuadEncoder(object):
     def __init__(self,
                  A_pin,
                  B_pin,
-                 updateInterval=0.01,
+                 updateInterval,
                  encoder_name="quadrature"):
-        # Init a Thread and an Event to stop it
-        self.thread=Thread(target=self.run)
-        self.event=Event()
-        # Run the thread as daemonic, so that it will terminate when the main thread stops
-        self.thread.daemon=True
-        # Save the pins privately
+        self.encoder_name = encoder_name
+        self.updateInterval = updateInterval
+
+        # Setup pins and routines for encoder counters
+        self.count = 0
         self.A_pin = A_pin
         self.B_pin = B_pin
-        self.updateInterval = updateInterval  # Update interval in seconds
-        self.encoder_name = encoder_name
-        self.count = 0
-        self.velocity = 0
-        # Set pins as input
         if IS_RPI:
             setup(self.A_pin, GPIO.IN)
             setup(self.B_pin, GPIO.IN)
@@ -97,8 +93,22 @@ class QuadEncoder(object):
             self.A_state = True
             self.B_state = True
             print('Encoder "%s" initialized' % encoder_name)
-        # Run thread
-        self.thread.start()
+
+        if updateInterval is None:
+            # Update velocity only when requested
+            self.thread = None
+            self.event = None
+        else:
+            # Init a Thread and an Event to stop it
+            self.thread = Thread(target=self.run)
+            self.event = Event()
+            # Run the thread as daemonic, so that it will terminate when the main thread stops
+            self.thread.daemon = True
+            # Run thread
+            self.thread.start()
+
+        self.velocity = 0
+        self.lastUpdateTime = time.clock()
 
     def A_callback(self, channel):
         self.A_state = GPIO.input(self.A_pin)
@@ -116,20 +126,20 @@ class QuadEncoder(object):
 
     # Thread's run() function to compute the encoder speed as counts/second
     def run(self):
-        lastUpdateTime = None
         while not self.event.is_set():
-            currentTime = time.clock()
-            if lastUpdateTime is not None:
-                self.velocity = float(self.count) / (currentTime - lastUpdateTime)
-            else:
-                # Take care of the first iteration in the loop
-                self.velocity = 0.0
-            self.count = 0  # Note: If there is threading issues we may need a lock for modifying this variable
-            lastUpdateTime = currentTime
+            self.update_velocity()
             time.sleep(self.updateInterval)
+
+    def update_velocity(self):
+        currentTime = time.clock()
+        self.velocity = float(self.count) / (currentTime - self.lastUpdateTime)
+        self.count = 0
+        self.lastUpdateTime = currentTime
 
     # Return the velocity in counts/seconds
     def get_velocity(self):
+        if self.updateInterval is None:
+            self.update_velocity()
         return self.velocity
 
     # Function to update the interval
@@ -149,14 +159,14 @@ class QuadEncoder(object):
 # Specialized class for left and right encoders
 class QuadEncoderRight(QuadEncoder):
     """Specialized class to create a right encoder"""
-    def __init__(self, updateInterval=0.01):
+    def __init__(self, updateInterval=0.1):
         QuadEncoder.__init__(self, R_encoder_A, R_encoder_B, updateInterval,
                              "Right Encoder")
 
 
 class QuadEncoderLeft(QuadEncoder):
     """Specialized class to create a left encoder"""
-    def __init__(self, updateInterval=0.01):
+    def __init__(self, updateInterval=0.1):
         QuadEncoder.__init__(self, L_encoder_A, L_encoder_B, updateInterval,
                              "Left Encoder")
 
