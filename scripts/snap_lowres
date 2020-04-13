@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+raspistill -w 640 -h 480 -o $1
