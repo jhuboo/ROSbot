@@ -112,3 +112,7 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# Extra archives
+*.zip
+*.bag

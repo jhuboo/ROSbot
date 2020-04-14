@@ -59,6 +59,23 @@ def image_one_to_three_channels(img):
     img_three = np.tile(img.reshape(img.shape[0], img.shape[1], 1), (1, 1, 3))
     return img_three
 
+def image_centroid_test():
+    #load test image
+    img = cv2.imread('line-test.jpg')
+    #make segmented image
+    lb, ub = classifier_parameters()
+    img_seg = cv2.inRange(img, lb, ub)
+    #compute centroid
+    x = image_centroid_horizontal(img_seg)
+    #make img color
+    color = image_one_to_three_channels(img_seg)
+    #add line on color img
+    line = image_line_vertical(color, x)
+    #show images
+    cv2.imshow('test_original', img)
+    cv2.waitKey()
+    cv2.imshow('test_segmented', line)
+    cv2.waitKey()
 
 def test():
     #load sample image
