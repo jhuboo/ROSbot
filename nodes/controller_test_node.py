@@ -18,7 +18,7 @@ class ControllerTest(object):
             self.pub[pub_name] = rospy.Publisher(
                 '/control_' + pub_name, Float64, queue_size=2)
         self.stamp_previous = None
-        self.pid = controller.PIDController()
+        self.pid = controller.PID()
 
     def callback(self, msg):
         error_signal = msg.point.x
