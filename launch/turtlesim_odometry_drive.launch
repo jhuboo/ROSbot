@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<?ignore
+Turtlesim with camera simulation and key_op
+?>
+
+<launch>
+  <include file="$(find me416_lab)/launch/turtlesim_odometry_camera.launch"/>
+  <node pkg="me416_lab" name="key_op" type="key_op.py" output="screen"/>
+</launch>

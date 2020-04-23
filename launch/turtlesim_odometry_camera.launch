@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<?ignore
+Turtlesim with camera simulation
+?>
+
+<launch>
+  <!-- Turtlesim node -->
+  <node pkg="turtlesim" type="turtlesim_node" name="sim"/>
+  <!-- Kill standard turtle, make a turtle_euler -->
+  <node pkg="rosservice" type="rosservice" name="kill" args="call --wait /kill turtle1" />
+  <node pkg="rosservice" type="rosservice" name="spawn_euler" args="call --wait /spawn 5 5 0 turtle_euler" />
+  <node pkg="rosservice" type="rosservice" name="spawn_arcs" args="call --wait /spawn 5 5 0 turtle_arcs" />
+  <!-- Node to link published pose with turtle -->
+  <node pkg="me416_lab" type="turtlesim_odometry_teleporter.py" name="turtlesim_odometry_teleporter" />
+  <!-- Manual drive and exact odometry -->
+  <node pkg="me416_lab" name="motor_command" type="motor_command.py"/>
+  <node pkg="me416_lab" type="track_simulator_odometry.py" name="odometry_camera"/>
+</launch>
