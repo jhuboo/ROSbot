@@ -69,6 +69,8 @@ class QuadEncoder(object):
                  encoder_name="quadrature"):
         self.encoder_name = encoder_name
         self.updateInterval = updateInterval
+        self.velocity = 0.0
+        self.lastUpdateTime = time.time() - 0.01 # small offset to prevent dividing by 0
 
         # Setup pins and routines for encoder counters
         self.count = 0
@@ -107,22 +109,19 @@ class QuadEncoder(object):
             # Run thread
             self.thread.start()
 
-        self.velocity = 0
-        self.lastUpdateTime = time.clock()
-
     def A_callback(self, channel):
         self.A_state = GPIO.input(self.A_pin)
         if self.A_state == self.B_state:
-            self.count -= 1  # A follows B
+            self.count -= 1.0  # A follows B
         else:
-            self.count += 1  # A leads B
+            self.count += 1.0  # A leads B
 
     def B_callback(self, channel):
         self.B_state = GPIO.input(self.B_pin)
         if self.A_state == self.B_state:
-            self.count += 1  # B follows A
+            self.count += 1.0  # B follows A
         else:
-            self.count -= 1  # B leads A
+            self.count -= 1.0  # B leads A
 
     # Thread's run() function to compute the encoder speed as counts/second
     def run(self):
@@ -131,9 +130,15 @@ class QuadEncoder(object):
             time.sleep(self.updateInterval)
 
     def update_velocity(self):
-        currentTime = time.clock()
-        self.velocity = float(self.count) / (currentTime - self.lastUpdateTime)
-        self.count = 0
+        currentTime = time.time()
+	dt = currentTime - self.lastUpdateTime
+	# Calculate the velocity
+	# NOTE: We can use a low-pass filter or linear estimator, but it requires tuning when we change the sample time interval
+	# To avoid tuning, we assume that the Pi is does not miss any ticks and the self.count is perfect along with the interval
+	# measure time dt (this works well enough for the currently spec'ed parts for year 2021)
+        self.velocity = self.count/dt
+	# Reset counter to 0
+        self.count = 0.0
         self.lastUpdateTime = currentTime
 
     # Return the velocity in counts/seconds
