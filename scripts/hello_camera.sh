@@ -1,3 +1,3 @@
 #!/bin/bash
 
-raspistill -o hello_image.jpg
+streamer -f jpeg -o hello_image.jpeg
