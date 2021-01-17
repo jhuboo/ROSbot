@@ -1,0 +1,37 @@
+#!/bin/bash
+# Script to update the personal wifi credentials
+# Assumes standard router settings using wpa-psk
+echo "What is the name of your personal WIFI connection (SSID)?"
+read -p "SSID: " BUlogin
+# Ask for Kerberos password
+COUNTER=3
+until [ $COUNTER -eq 0 ]; do
+        # Ask for password
+        read -sp "Enter personal WIFI password: " BUpasswd1
+        echo ""
+        read -sp "Retype personal WIFI password: " BUpasswd2
+        echo ""
+        # Check if password is the same, else try again
+        let COUNTER-=1
+        if [ "$BUpasswd1" == "$BUpasswd2" ]
+        then
+                break
+        elif [ $COUNTER -eq 0 ]
+        then
+                BUpasswd1=""
+                BUpasswd2=""
+        else
+                echo "Passwords do not match. Try again"
+        fi
+done
+
+# Update personal WIFI login
+if [ -n "$BUlogin" ] && [ -n "$BUpasswd1" ]
+then
+        echo "Updating personal WIFI network credentials..."
+        sudo nmcli c mod personal-WIFI wifi.ssid "$BUlogin"
+        sudo nmcli c mod personal-WIFI 802-11-wireless-security.psk "$BUpasswd1"
+else
+        echo "Not updating personal WIFI network credentials..."
+fi
+echo ""

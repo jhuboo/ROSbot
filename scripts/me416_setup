@@ -4,10 +4,11 @@ cat << EOF
 Usage: $(basename "$0") <option>
 
 Options:
-"all" - go through all settings and reboot
+"all" - go through all important settings and reboot
 "password" - set the ubuntu user's password
 "name" - set the robot's name
 "wifi" - set the credentials for the BU Wifi
+"personalwifi" - set the credentials for a personal wpa-psk home Wifi
 "hotspotpass" -set the credentials for the local hotspot
 "reboot" - restart the pi
 NOTE: Only the first argument is processed.
@@ -42,6 +43,11 @@ fi
 if [ "$1" = "wifi" ]; then
 	#Change BUWIFI
 	me416_setup_BUWIFI
+fi
+
+if [ "$1" = "personalwifi" ]; then
+	#Change personal wifi profile
+	me416_setup_personalWIFI
 fi
 
 if [ "$1" = "hotspotpass" ] || [ "$1" = "all" ]; then
