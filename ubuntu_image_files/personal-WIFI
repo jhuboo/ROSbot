@@ -1,6 +1,6 @@
 [connection]
 id=my_wifi_id
-uuid=
+uuid=2058a291-13af-42b4-8c5c-8870376bb795
 type=wifi
 autoconnect-priority=10
 permissions=
