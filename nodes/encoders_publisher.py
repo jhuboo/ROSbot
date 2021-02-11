@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """
-Publishes the values of the encoders
+Publishes the values of the encoders in counts per seconds (CPS).
+To convert to rotations per minute (RPM) of the output shaft
+RPM = CPS*(60 seconds/minute) / (GEAR RATIO output:input) / (COUNTS Per Revolution)
+Example (12 CPR encoder with 120:1 gear ratio, running at 3600 CPS):
+3600 CPS * 60 / 120 / 12 = 150RPM (which is the spec'ed speed for our current plastic motors)
 """
 
 import rospy
@@ -20,16 +24,16 @@ def main():
 
     #Prepare objects for message and encoders
     msg = MotorSpeedsStamped()
-    encoder_right = mu.QuadEncoderRight(updateInterval=None)
-    encoder_left = mu.QuadEncoderLeft(updateInterval=None)
+    encoder_right = mu.QuadEncoderRight()
+    encoder_left = mu.QuadEncoderLeft()
 
     #Set rate to use (in Hz)
     rate = rospy.Rate(3)
 
     while not rospy.is_shutdown():
         msg.header.stamp = rospy.Time.now()
-        msg.left = encoder_left.get_velocity() / 15000
-        msg.right = encoder_right.get_velocity() / 15000
+        msg.left = encoder_left.get_velocity()
+        msg.right = encoder_right.get_velocity()
         pub.publish(msg)
         rate.sleep()
 
