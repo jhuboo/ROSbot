@@ -6,11 +6,12 @@ RPM = CPS*(60 seconds/minute) / (GEAR RATIO output:input) / (COUNTS Per Revoluti
 Example (12 CPR encoder with 120:1 gear ratio, running at 3600 CPS):
 3600 CPS * 60 / 120 / 12 = 150RPM (which is the spec'ed speed for our current plastic motors)
 """
-
+from __future__ import print_function
 import rospy
 import me416_utilities as mu
 from me416_lab.msg import MotorSpeedsStamped
 
+import numpy as np
 
 def main():
     """Node setup and main ROS loop"""
@@ -22,25 +23,40 @@ def main():
                           MotorSpeedsStamped,
                           queue_size=10)
 
+
     #Prepare objects for message and encoders
     msg = MotorSpeedsStamped()
-    encoder_right = mu.QuadEncoderRight()
-    encoder_left = mu.QuadEncoderLeft()
+    encoder_right = mu.createEncoder("Right encoder")
+    encoder_left = mu.createEncoder("Left encoder")
+
+    actuator_right = mu.createActuator("right actuator")
+    actuator_left = mu.createActuator("left actuator")
 
     #Set rate to use (in Hz)
     rate = rospy.Rate(3)
 
     while not rospy.is_shutdown():
-        msg.header.stamp = rospy.Time.now()
-        msg.left = encoder_left.get_velocity()
-        msg.right = encoder_right.get_velocity()
-        pub.publish(msg)
+
+        # Set wheel velocities. 
+        actuator_right.set_velocity(0.46)
+        actuator_left.set_velocity(0.63)
+
+        # Velocity readings. Should be close to the ones above!
+        print("{}: {:.2f}".format(encoder_left.name,encoder_left.get_velocity()))
+        print("{}: {:.2f}".format(encoder_right.name,encoder_right.get_velocity()))
+
+        # msg.header.stamp = rospy.Time.now()
+        # msg.left = encoder_left.get_velocity()
+        # msg.right = encoder_right.get_velocity()
+        # pub.publish(msg)
+
         rate.sleep()
 
 
 if __name__ == '__main__':
     try:
         main()
+
     finally:
         #This is the place to put any "clean up" code that should be executed
         #on shutdown even in case of errors, e.g., closing files or windows
