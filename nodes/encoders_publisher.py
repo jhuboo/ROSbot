@@ -38,17 +38,19 @@ def main():
     while not rospy.is_shutdown():
 
         # Set wheel velocities. 
-        actuator_right.set_velocity(0.46)
-        actuator_left.set_velocity(0.63)
+        actuator_right.set_velocity(0.87)
+        actuator_left.set_velocity(0.53)
 
         # Velocity readings. Should be close to the ones above!
-        print("{}: {:.2f}".format(encoder_left.name,encoder_left.get_velocity()))
-        print("{}: {:.2f}".format(encoder_right.name,encoder_right.get_velocity()))
+        left_velocity = encoder_left.get_velocity()
+        right_velocity = encoder_right.get_velocity()
+        print("{}: {:.2f}".format(encoder_left.name,left_velocity))
+        print("{}: {:.2f}".format(encoder_right.name,right_velocity))
 
-        # msg.header.stamp = rospy.Time.now()
-        # msg.left = encoder_left.get_velocity()
-        # msg.right = encoder_right.get_velocity()
-        # pub.publish(msg)
+        msg.header.stamp = rospy.Time.now()
+        msg.left = left_velocity
+        msg.right = right_velocity
+        pub.publish(msg)
 
         rate.sleep()
 
