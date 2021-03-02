@@ -26,10 +26,10 @@ def apply_action(L_motor,
         speed = 0
 
     if side == 'left' or side == 'both':
-        L_motor.set_speed(speed)
+        L_motor.set_velocity(speed)
 
     if side == 'right' or side == 'both':
-        R_motor.set_speed(speed)
+        R_motor.set_velocity(speed)
 
     if is_recursive:
         time.sleep(duration)
