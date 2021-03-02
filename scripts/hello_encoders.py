@@ -22,8 +22,8 @@ def exit_gracefully(signum, frame):
 def main():
     signal.signal(signal.SIGINT, exit_gracefully)
     signal.signal(signal.SIGTERM, exit_gracefully)
-    encoderRight = mu.QuadEncoderRight(updateInterval=None)
-    encoderLeft = mu.QuadEncoderLeft(updateInterval=None)
+    encoderRight = mu.createEncoder("Right encoder")
+    encoderLeft = mu.createEncoder("Left encoder")
     try:
         for i in range(1000):
             print('Right Velocity: ' + str(encoderRight.get_velocity()) +
