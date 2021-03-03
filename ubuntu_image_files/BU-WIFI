@@ -1,15 +1,14 @@
 [connection]
 id=BU-WIFI
-uuid=2309be3c-50de-4c1a-a79c-3334f6d4523f
+uuid=c6f6393b-48ec-4d7b-918f-dff878a1131a
 type=wifi
 autoconnect-priority=10
+autoconnect-retries=150
 permissions=
-timestamp=1578329951
 
 [wifi]
 mac-address-blacklist=
 mode=infrastructure
-seen-bssids=84:80:2D:49:D3:7D;E0:D1:73:28:FF:BD;
 ssid=BU (802.1x)
 
 [wifi-security]

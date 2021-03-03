@@ -156,10 +156,9 @@ def createActuator(name="",speed_factor=1.0,max_duty_cycle=90):
 
     if IS_GAZEBO:
         if "right" in name.lower():
-            # A small patch to flip the direction of the robot. Should fix it in the xacro file.
-            return GazeboMotorActuator(name,speed_factor,max_duty_cycle,"left")
-        elif "left" in name.lower():
             return GazeboMotorActuator(name,speed_factor,max_duty_cycle,"right")
+        elif "left" in name.lower():
+            return GazeboMotorActuator(name,speed_factor,max_duty_cycle,"left")
     elif IS_RPI:
         if 'right' in name.lower():
             return PlasticMotorActuator(R_forward_pin,

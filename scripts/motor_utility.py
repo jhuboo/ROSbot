@@ -26,10 +26,10 @@ def apply_action(L_motor,
         speed = 0
 
     if side == 'left' or side == 'both':
-        L_motor.set_speed(speed)
+        L_motor.set_velocity(speed)
 
     if side == 'right' or side == 'both':
-        R_motor.set_speed(speed)
+        R_motor.set_velocity(speed)
 
     if is_recursive:
         time.sleep(duration)
@@ -39,8 +39,8 @@ def apply_action(L_motor,
 def main(args):
     """Create motor objects, then apply specified commands."""
 
-    L_motor = mu.MotorSpeedLeft(SPEED_FACTOR)
-    R_motor = mu.MotorSpeedRight()
+    L_motor = mu.createActuator("left actuator",speed_factor=SPEED_FACTOR)
+    R_motor = mu.createActuator("right actuator")
 
     apply_action(L_motor, R_motor, args.direction, args.side, args.duration,
                  args.speed)
