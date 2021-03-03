@@ -13,7 +13,6 @@ It's called 'a2j2\_not\_r2d2'. Not a Star Wars reference! :D
 
 <p align="center">
 <img src="https://github.com/jhuboo/ROSbot/blob/main/images/finalROSBot_lq.jpg" />
-/*![Final ROSBOT](https://github.com/jhuboo/ROSbot/blob/main/images/finalROSBot_lq.jpg)*/
 </p>
 
 The build process can be seen by browsing the images directory, and videos
