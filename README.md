@@ -11,7 +11,7 @@ two-wheeled, robotic platform.
 Below is picture of the final ROSBot. 
 It's called 'a2j2\_not\_r2d2'. Not a Star Wars reference! :D
 
-![Final ROSBOT](https://www.github.com/jhuboo/ROSbot/tree/main/images/finalROSbot.jpg)
+![Final ROSBOT](https://www.github.com/jhuboo/ROSbot/images/for_github/finalrosbot.jpg)
 
 The build process can be seen by browsing the images directory, and videos
 of moving ROSBot can be seen in the videos directory.
