@@ -17,7 +17,7 @@ def main():
     msg = String()
 
     #Set rate to use (in Hz)
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
         msg.data = 'I am %s. The time is %.2f.' % (rospy.get_name(),
