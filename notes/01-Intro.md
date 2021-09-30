@@ -78,3 +78,161 @@ The above definition implies the following cycle: sensing -> computation -> actu
 1. Brushed DC Motors
 2. Brushless DC Motors
 
+
+
+## Software Organization
+
+### General Development Strategy
+
+Rule to maintain sanity: use modularity. Start with low-level functionality, make a way to test it, build on top.
+
+Software Stack for ROSBot
+1. Linux
+2. Robotic Operating System (ROS)
+
+### ROS Fundamentals
+
+1. Package
+	- A "module" of the ROS system, which provides a set of nodes, message defs (topics), and a dir with at least the files `package.xml` and `CMakeLists.txt`
+	- "package.xml" contains general info about the package, such as a description, the contact info of the maintainer, the dependencies of this pkg on other pkgs.
+	- "CMakeLists.txt" contains info about compiling the code for scripts, nodes, and messages/services. This is mainly required for C/C++ code and messages/services. If you only have Python code, this is not required.
+	- Packages commonly contain the subdirs:
+		- `/src`: with source code for the nodes
+		- `/script`: with programs that are typically commands that do not create nodes
+		- `/launch`: with launch files
+
+2. Workspaces
+	- A special dir contiaining all the pkgs that are under development (that are not system pkgs)
+	- The ROS workspace is in dir `ros_ws`
+	- "Making" a workspace means to compile all the code and message definitions in the pkgs in that workspace. This is done with the command "catkin make"
+
+3. Nodes
+	- A node is a process that is intended to run continously on your robot, and communicates with other nodes typically using ROS messages exchanged on ROS topics. Each node has a name. The command "rosnode list" gives the names of nodes that are running.
+	- Typically the name of the node is the same as one of the executable, although it could be different. As a consequence, the same executable can be launded multiple times under different names, creating different nodes.
+	- Nodes can be started manually using the command "rosrun \<pkgname\> \<nodename\>"
+	- NOTE: Since each node is supposed to run continously, each one occupies a terminal. The master node needs to be run first.
+
+4. Master Node
+	- Special node that is started with the command "roscore"
+	- The output of the master node to the console provides info on which nodes are being run, and which have stopped running
+	- It is possible to configure a machine to use a roscore running on another machine on the same network. In this way, topics can be sent.
+
+
+### Topics and Message Definitions
+
+> The most way to communicate between nodes is through messages exchanged over topics.
+
+Topics are "channels" on which nodes can either publish (send msgs) or subscribe (receive msgs). A list of topics can be see using the command "rostopic list". Each topic is assigned a message type at its definition. These types are defined in ROS packages (either system or user-defined), and are essentially structures whwere the fields can be some primitive types or other msg types. Topics can transfer msgs only of the type with which they have been defined. The info about the msg type of a topic can be found using:
+
+	 `rostopic info \<topicname\>`
+
+While topics are "channels", messages are the "packets" exchanged on these "channels". Youcan see what message are exchanged over topics. Loosely speaking, you will have:
+- "input" nodes, that only publish information
+- "processing" nodes, that subscribe to a topic and publish the data on another after transforming it
+- "output" nodes, that simply visualize the results
+
+
+### Header Message Structure
+
+> A structure containing meta-information about a package.
+
+***NOTE 1***: The field `seq` is automatically populated when a msg is published. However, the fields `frame_id` and `stamp` need to be manually populated if they are used
+
+***NOTE 2***: The field `stamp` is a time struct where seconds and nanoseconds are separated. The Python implementation has the method `.to_sec()` to obtain the combination of the two fields in a single number expressed in seconds.
+
+
+### roslaunch & launch files
+
+> Instead of launching every node (including master) manually, you can embed them in a launch file.
+
+Since the system is likely to have a lot of nodes that perform interrelated functions as it grows, it is easier to use a launch file to semi-automate the launching of those nodes. For instance, it might be that one node published image from a camera, another performs image processing, and the other two show the original and processed images.
+
+launch files are launched as follows using the `roslaunch` command (NOTE: roslaunch will launch a master, ie `roscore`):
+
+	```roslaunch <pkg_name> <file_name>.launch```
+
+launch files are usually stored in the `/launch` directory of a ROS package. A sample launch file is shown below:
+
+```
+<?xml version="1.0"?>
+
+<?ignore
+	Script streams camera to a screen and loads the keyboard motor controls
+?>
+
+<launch>
+	<include file="$(find myROS_pkg)/launch/camera.launch"/>
+	<node pkg="myROS_pkg" name="motor_command" type="motor_command.py"/>
+	<node pkg="myROS_pkg" name="key_op" type="key_op.py" output="screen"/>
+</launch>
+```
+
+
+##### Breakdown of the launch file
+
+- Header (mandatory)
+	```?xml version="1.0"?>
+
+- Optional Description
+	```
+	<?ignore
+		content of description
+	?>
+	```
+
+- Main tags (mandatory)
+	```
+	<launch>
+		[...]
+	</launch>
+	```
+
+- Nodes
+	To ask to start a node, you can use the command:
+	```
+	<node pkg="package_name" name="node_name" type="node_file_name"/>
+	```
+
+- Inclusion of other launch files
+	Other launch files can be launched by including them:
+	```
+	<include file="$(find pkg_name)/launch/file-name.launch"/>
+	```
+
+
+#### rosbag
+
+> ROS bags are achives of msgs and topics.
+
+You can record/replay all topics, or only specific topics, and you can also "filter" bags (change topic names, remove topics, ...). The Ros bags also record the timing of each msg.
+
+Use the command `rosbag` to manage ROS bags.
+
+To record ALL msgs and their timings from ALL the topics (even for nodes not started in the same terminal), use:
+
+	```
+	rosbag record --all
+	```
+
+If specific topics are needed instead, they can be specified (ie, for topic chatter):
+
+	```
+	rosbag record chatter
+	```
+
+The rosbag record command will store all the info captured in `.bag` file in the current dir. The only way to stop the recording is to use the `CTRL+C` key combo.
+
+The command `rosbag play filename.bag` will replay the contents of the specified ROS bag file. All the msgs from all the topics recorded are published again with the same relative timing as they were recorded. You can run the same or additional nodes while replaying a ROS bag; these nodes can subscribe or publish on the same topics from the bag.
+
+	```
+	rosbag play filename.bag
+	--start=TIME  		- Start playing from TIME seconds into the file
+	--duration=TIME 	- Play for a duration of TIME seconds
+	```
+
+### Summary
+
+The ROS architecture makes it easy to be modular. For prototyping, it is best to keep each node as simple as possible, so that they can be reused. If possible, use nodes that are already available and tested. The only downside is that publishing/suscribing on nodes is slower that doing everything in the same program.
+
+NOTE: Nodelets can be used to increase performance.
+
