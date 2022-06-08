@@ -8,7 +8,7 @@ two-wheeled, robotic platform.
 
 Below is picture of the final ROSBot. 
 
-It's called 'a2j2\_not\_r2d2'.
+It's called 'a2j2'.
 
 <p align="center">
 <img src="https://github.com/jhuboo/ROSbot/blob/main/images/finalROSBot_lq.jpg" />
